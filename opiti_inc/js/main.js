@@ -269,8 +269,74 @@
     fixedContentPos: false
   });
 
+	// handle phone and country detais
+	var input = document.querySelector('#phone');
+  	// var country = document.getElementById("country");
 
+  	window.iti = window.intlTelInput(input,{
+  		nationalMode: true,
+  		placeholderNumberType: "FIXED_LINE_OR_MOBILE",
+      	preferredCountries: [ "za", "ke", "us", "gb" ],
+      	utilsScript: "intl-tel-input/js/utils.js",
+  	});
+  	
+  	$("#phone").on("change", function () {
+		let numb = intlTelInputUtils.formatNumber(iti.getNumber(), null, intlTelInputUtils.numberFormat.NATIONAL);
+		if (iti.isValidNumber()){
+			iti.setNumber(numb);
+			// country.value = iti.getSelectedCountryData()['name'];
+			$("#phone_valid").addClass('hiddenField');
+			$("#submitBtn").prop('disabled', false);
+		}
+	});
+	input.addEventListener("countrychange", function(){
+		let numb = intlTelInputUtils.formatNumber(iti.getNumber(), null, intlTelInputUtils.numberFormat.NATIONAL);
+		if (iti.isValidNumber()){
+			iti.setNumber(numb);
+			// country.value = iti.getSelectedCountryData()['name'];
+		} else {
+			if (phone.value){
+				$("#phone_valid").removeClass("hiddenField");
+				$("#phone_valid").html("Please enter a valid phone number!").css("color","red");
+				$("#submitBtn").prop('disabled', true);
+			}
+		}
+	});
 
+  	
+	// handle contact form
+  	$("#submitBtn").on("click", function(evt){
+		evt.preventDefault();
+		let messageData = {
+			"name": $("#name").val().trim(),
+			"email": $("#email").val(),
+			"subject": $("#subject").val(),
+			"message": $("#message").val()
+		}
+
+		if ($("#phone").val() != ""){
+			messageData.phone = $("#phone").val();
+			messageData.country = iti.getSelectedCountryData().name;
+			messageData.country_code = iti.getSelectedCountryData().iso2;
+		}
+
+		$.post({
+			url: "https://solutions.opiticonsulting.com/api/messages/",
+			data: JSON.stringify(messageData),
+			contentType: "application/json",
+			success: function (data, status) {
+				flash(data.message);
+			},
+			error: function (xhr, status, error){
+				let errorMessage = xhr.status + ": " + xhr.statusText;
+				// console.log(errorMessage);
+				// console.log(error);
+				flash(errorMessage, {
+					"bgColor": "#C0392B"
+				});
+			}
+		});
+	});
 
 
 })(jQuery);
