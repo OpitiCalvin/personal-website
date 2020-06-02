@@ -320,15 +320,18 @@
 			messageData.country_code = iti.getSelectedCountryData().iso2;
 		}
 
+		// console.log(messageData);
+
 		$.post({
-			url: "https://solutions.opiticonsulting.com/api/messages/",
+			url: "https://solutions.opiticonsulting.com/api/messages",
 			data: JSON.stringify(messageData),
 			contentType: "application/json",
 			success: function (data, status) {
+				$("#msgForm")[0].reset();
 				flash(data.message);
 			},
 			error: function (xhr, status, error){
-				let errorMessage = xhr.status + ": " + xhr.statusText;
+				let errorMessage = xhr.statusText + ": Message not sent!";
 				// console.log(errorMessage);
 				// console.log(error);
 				flash(errorMessage, {
