@@ -270,8 +270,8 @@
   });
 
 	// handle phone and country detais
-	var input = document.querySelector('#phone');
-  	// var country = document.getElementById("country");
+	let input = document.querySelector('#phone');
+  	// let country = document.getElementById("country");
 
   	window.iti = window.intlTelInput(input,{
   		nationalMode: true,
@@ -285,8 +285,13 @@
 		if (iti.isValidNumber()){
 			iti.setNumber(numb);
 			// country.value = iti.getSelectedCountryData()['name'];
+			$("#phone_valid").empty();
 			$("#phone_valid").addClass('hiddenField');
 			$("#submitBtn").prop('disabled', false);
+		} else {
+			$("#phone_valid").removeClass("hiddenField");
+			$("#phone_valid").html("Please enter a valid phone number!").css("color","red");
+			$("#submitBtn").prop('disabled', true);
 		}
 	});
 	input.addEventListener("countrychange", function(){
@@ -294,6 +299,9 @@
 		if (iti.isValidNumber()){
 			iti.setNumber(numb);
 			// country.value = iti.getSelectedCountryData()['name'];
+			$("#phone_valid").empty();
+			$("#phone_valid").addClass('hiddenField');
+			$("#submitBtn").prop('disabled', false);
 		} else {
 			if (phone.value){
 				$("#phone_valid").removeClass("hiddenField");
@@ -307,48 +315,56 @@
 	// handle contact form
   	$("#submitBtn").on("click", function(evt){
 		evt.preventDefault();
-		let messageData = {
-			"name": $("#name").val().trim(),
-			"email": $("#email").val(),
-			"subject": $("#subject").val(),
-			"message": $("#message").val()
-		}
 
-		if ($("#phone").val() != ""){
-			messageData.phone = $("#phone").val();
-			messageData.country = iti.getSelectedCountryData().name;
-			messageData.country_code = iti.getSelectedCountryData().iso2;
-		}
+		if ( $("#name").val() !== "" && $("#email").val() !== "" && $("#message").val() !== "" && $("#subject").val() !== "") {
+			let messageData = {
+				"name": $("#name").val().trim(),
+				"email": $("#email").val(),
+				"subject": $("#subject").val(),
+				"message": $("#message").val()
+			}
 
-		// console.log(messageData);
+			if ($("#phone").val() != ""){
+				messageData.phone = $("#phone").val();
+				messageData.country = iti.getSelectedCountryData().name;
+				messageData.country_code = iti.getSelectedCountryData().iso2;
+			}
 
-		fetch("https://solutions.opiticonsulting.com/api/messages",{
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			mode: 'cors',
-			method: 'POST',
-			body: JSON.stringify(messageData)
-		})
-		.then(response => response.json())
-		.then(data => {
-			console.log(data);
-			if (data.code === 200){
-				$("#msgForm")[0].reset();
-				flash(data.message);
-			} else {
-				// $("#msgForm")[0].reset();
-				flash(data.message, {
+			// console.log(messageData);
+
+			fetch("https://solutions.opiticonsulting.com/api/messages",{
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				mode: 'cors',
+				method: 'POST',
+				body: JSON.stringify(messageData)
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				if (data.code === 200){
+					$("#msgForm")[0].reset();
+					flash(data.message);
+				} else {
+					// $("#msgForm")[0].reset();
+					flash(data.message, {
+						"bgColor": "#C0392B"
+					});
+				}
+				
+			})
+			.catch((error)=> {
+				flash(error, {
 					"bgColor": "#C0392B"
 				});
-			}
-			
-		})
-		.catch((error)=> {
-			flash(error, {
+			});
+		} else {
+			flash("Please fill in the required fields.", {
 				"bgColor": "#C0392B"
 			});
-		})
+		}
+		
 	});
 
 
